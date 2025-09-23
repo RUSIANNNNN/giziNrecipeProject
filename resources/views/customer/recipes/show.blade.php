@@ -28,7 +28,7 @@
     </ul>
 
     <h3>Rating</h3>
-    <form action="{{ route('ratings.store', $recipe->id) }}" method="POST">
+    <form action="{{ route('ratings.store', $recipe) }}" method="POST">
         @csrf
         <select name="rating" required>
             <option value="">Pilih rating</option>

@@ -207,4 +207,10 @@ class AdminController extends Controller
 
         return redirect()->route('admin.recipes.index')->with('success', 'Resep berhasil dihapus!');
     }
+
+    public function show(Recipe $recipe)
+    {
+        $recipe->load(['ingredients', 'steps', 'nutritions']);
+        return view('admin.recipes.show', compact('recipe'));
+    }
 }
