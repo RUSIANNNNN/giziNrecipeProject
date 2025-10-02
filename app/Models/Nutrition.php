@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Nutrition extends Model
 {
     use HasFactory;
+    protected $table = 'nutritions';
 
     protected $fillable = ['recipe_id', 'name', 'value'];
-    protected $table = 'nutritions';
     
     public function recipe() {
         return $this->belongsTo(Recipe::class);

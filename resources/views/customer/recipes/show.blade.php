@@ -46,6 +46,7 @@
             @endforelse
         </ul>
     </div>
+    
 
     {{-- Rating --}}
     <div class="section">
