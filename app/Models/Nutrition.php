@@ -10,7 +10,8 @@ class Nutrition extends Model
     use HasFactory;
 
     protected $fillable = ['recipe_id', 'name', 'value'];
-
+    protected $table = 'nutritions';
+    
     public function recipe() {
         return $this->belongsTo(Recipe::class);
     }

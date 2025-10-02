@@ -88,34 +88,42 @@ class AdminController extends Controller
         // Tambah bahan
         if ($request->ingredients) {
             foreach ($request->ingredients as $ingredient) {
-                Ingredient::create([
-                    'recipe_id' => $recipe->id,
-                    'item' => $ingredient,
-                ]);
+                if (!empty($ingredient)) { // hanya simpan kalau tidak kosong
+                    Ingredient::create([
+                        'recipe_id' => $recipe->id,
+                        'item' => $ingredient,
+                    ]);
+                }
             }
         }
 
+    
         // Tambah langkah
         if ($request->steps) {
             foreach ($request->steps as $index => $step) {
-                Step::create([
-                    'recipe_id' => $recipe->id,
-                    'instruction' => $step,
-                    'order' => $index + 1,
-                ]);
+                if (!empty($step)) {
+                    Step::create([
+                        'recipe_id' => $recipe->id,
+                        'instruction' => $step,
+                        'order' => $index + 1,
+                    ]);
+                }
             }
         }
 
         // Tambah kandungan gizi
         if ($request->nutritions) {
             foreach ($request->nutritions as $nutrition) {
-                Nutrition::create([
-                    'recipe_id' => $recipe->id,
-                    'name' => $nutrition['name'],
-                    'value' => $nutrition['amount'],
-                ]);
+                if (!empty($nutrition['name']) && !empty($nutrition['amount'])) {
+                    Nutrition::create([
+                        'recipe_id' => $recipe->id,
+                        'name' => $nutrition['name'],
+                        'value' => $nutrition['amount'],
+                    ]);
+                }
             }
         }
+
 
         return redirect()->route('admin.recipes.index')->with('success', 'Resep berhasil ditambahkan!');
     }
@@ -158,37 +166,44 @@ class AdminController extends Controller
         $recipe->steps()->delete();
         $recipe->nutritions()->delete();
 
-        // Tambah bahan baru
-        if ($request->ingredients) {
-            foreach ($request->ingredients as $ingredient) {
-                Ingredient::create([
-                    'recipe_id' => $recipe->id,
-                    'item' => $ingredient,
-                ]);
-            }
+       // Tambah bahan baru
+if ($request->ingredients) {
+    foreach ($request->ingredients as $ingredient) {
+        if (!empty($ingredient)) { // skip kosong
+            Ingredient::create([
+                'recipe_id' => $recipe->id,
+                'item' => $ingredient,
+            ]);
         }
+    }
+}
 
-        // Tambah langkah baru
-        if ($request->steps) {
-            foreach ($request->steps as $index => $step) {
-                Step::create([
-                    'recipe_id' => $recipe->id,
-                    'instruction' => $step,
-                    'order' => $index + 1,
-                ]);
-            }
+// Tambah langkah baru
+if ($request->steps) {
+    foreach ($request->steps as $index => $step) {
+        if (!empty($step)) { // skip kosong
+            Step::create([
+                'recipe_id' => $recipe->id,
+                'instruction' => $step,
+                'order' => $index + 1,
+            ]);
         }
+    }
+}
 
-        // Tambah kandungan gizi baru
-        if ($request->nutritions) {
-            foreach ($request->nutritions as $nutrition) {
-                Nutrition::create([
-                    'recipe_id' => $recipe->id,
-                    'name' => $nutrition['name'],
-                    'value' => $nutrition['amount'],
-                ]);
-            }
+// Tambah kandungan gizi baru
+if ($request->nutritions) {
+    foreach ($request->nutritions as $nutrition) {
+        if (!empty($nutrition['name']) && !empty($nutrition['amount'])) { // skip kosong
+            Nutrition::create([
+                'recipe_id' => $recipe->id,
+                'name' => $nutrition['name'],
+                'value' => $nutrition['amount'],
+            ]);
         }
+    }
+}
+
 
         return redirect()->route('admin.recipes.index')->with('success', 'Resep berhasil diupdate!');
     }
@@ -206,5 +221,11 @@ class AdminController extends Controller
         $recipe->delete();
 
         return redirect()->route('admin.recipes.index')->with('success', 'Resep berhasil dihapus!');
+    }
+    
+    public function show(Recipe $recipe)
+    {
+        $recipe->load(['ingredients', 'steps', 'nutritions']);
+        return view('admin.recipes.show', compact('recipe'));
     }
 }

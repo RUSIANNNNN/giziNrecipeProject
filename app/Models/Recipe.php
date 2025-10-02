@@ -40,4 +40,10 @@ class Recipe extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+    // App\Models\Recipe.php
+    public function averageRating(): float
+    {
+        return (float) ($this->ratings()->avg('rating') ?? 0);
+    }
 }
