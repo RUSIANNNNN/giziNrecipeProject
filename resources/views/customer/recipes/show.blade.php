@@ -1,137 +1,87 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    {{-- Foto Resep --}}
-    <div class="recipe-header">
-        @if($recipe->photo)
-            <img src="{{ asset('storage/' . $recipe->photo) }}" alt="{{ $recipe->name }}" class="recipe-photo">
-        @else
-            <img src="https://via.placeholder.com/400x250" alt="No Image" class="recipe-photo">
-        @endif
 
-        <div class="recipe-title">
-            <h2>{{ $recipe->name }}</h2>
-            <p><strong>Pakar Gizi:</strong> {{ $recipe->nutritionist }}</p>
-            <p><strong>Durasi:</strong> {{ $recipe->duration }}</p>
+<div class="py-6">
+<div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+
+    <h2 class="font-semibold text-3xl text-gray-800 leading-tight mb-2">
+        {{ $recipe->name }}
+    </h2>
+    
+    <p class="text-gray-600 text-sm mb-4">
+        Oleh: 
+        @if($recipe->is_official)
+            <strong>Pakar Gizi ({{ $recipe->nutritionist }})</strong>
+        @else
+            <strong>{{ $recipe->user->name ?? 'User' }}</strong>
+        @endif
+        | Durasi: <strong>{{ $recipe->duration }}</strong>
+    </p>
+
+    <!-- Tombol Aksi (Edit/Hapus) -->
+    @if(Auth::id() == $recipe->user_id)
+        <div class="mb-6 space-x-2">
+            {{-- PERBAIKAN 1: Menambahkan kelas CSS agar tombol pasti terlihat --}}
+            <a href="{{ route('customer.recipes.edit', $recipe->id) }}" class="inline-block px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-sm hover:bg-yellow-600 transition-colors">
+                Edit Resep
+            </a>
+            <form action="{{ route('customer.recipes.destroy', $recipe->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus resep ini?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-sm hover:bg-red-700 transition-colors">
+                    Hapus Resep
+                </button>
+            </form>
+        </div>
+    @endif
+
+    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+        {{-- PERBAIKAN 2: Memberi batasan tinggi pada gambar agar tidak terlalu besar --}}
+        <img src="{{ $recipe->photo ? asset('storage/' . $recipe->photo) : 'https://placehold.co/800x400/e2e8f0/e2e8f0?text=GiziKu' }}" alt="{{ $recipe->name }}" class="w-full h-80 object-cover">
+        
+        <div class="p-6 md:p-8">
+            <h3 class="font-semibold text-xl text-gray-800 mb-2">Deskripsi</h3>
+            <p class="text-gray-700 mb-6">{{ $recipe->description }}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Bahan & Alat -->
+                <div>
+                    <h3 class="font-semibold text-xl text-gray-800 mb-3">Alat & Bahan</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        @foreach($recipe->ingredients as $ingredient)
+                            <li>{{ $ingredient->item }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                
+                <!-- Gizi -->
+                <div>
+                    <h3 class="font-semibold text-xl text-gray-800 mb-3">Informasi Gizi</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        @forelse($recipe->nutritions as $nutrition)
+                            <li><strong>{{ $nutrition->name }}:</strong> {{ $nutrition->value }}</li>
+                        @empty
+                            <li>Informasi gizi tidak tersedia.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Langkah -->
+            <div class="mt-8">
+                <h3 class="font-semibold text-xl text-gray-800 mb-3">Langkah Pembuatan</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    @foreach($recipe->steps as $step)
+                        <li>{{ $step->instruction }}</li>
+                    @endforeach
+                </ol>
+            </div>
         </div>
     </div>
 
-    {{-- Deskripsi --}}
-    <div class="section">
-        <h3>Deskripsi</h3>
-        <p>{{ $recipe->description ?? 'Tidak ada deskripsi.' }}</p>
-    </div>
-
-    {{-- Langkah / Cara Buat --}}
-    <div class="section">
-        <h3>Cara Membuat</h3>
-        <ol>
-            @forelse($recipe->steps as $step)
-                <li>{{ $step->instruction }}</li>
-            @empty
-                <li>Tidak ada langkah tersedia.</li>
-            @endforelse
-        </ol>
-    </div>
-
-    {{-- Alat dan Bahan --}}
-    <div class="section">
-        <h3>Alat & Bahan</h3>
-        <ul>
-            @forelse($recipe->ingredients as $ingredient)
-                <li>{{ $ingredient->item }}</li>
-            @empty
-                <li>Tidak ada data bahan.</li>
-            @endforelse
-        </ul>
-    </div>
-    
-
-    {{-- Rating --}}
-    <div class="section">
-        <h3>Rating</h3>
-        <form action="{{ route('ratings.store', $recipe) }}" method="POST">
-            @csrf
-            <select name="rating" required>
-                <option value="">Pilih rating</option>
-                <option value="1">⭐</option>
-                <option value="2">⭐⭐</option>
-                <option value="3">⭐⭐⭐</option>
-                <option value="4">⭐⭐⭐⭐</option>
-                <option value="5">⭐⭐⭐⭐⭐</option>
-            </select>
-            <button type="submit">Kirim Rating</button>
-        </form>
-
-        <p>Rata-rata rating: {{ number_format($recipe->averageRating(), 1) }} / 5</p>
-    </div>
-
-    {{-- Komposisi Gizi --}}
-    <div class="section">
-        <h3>Komposisi Gizi</h3>
-        <ul>
-            @forelse($recipe->nutritions as $nutrition)
-                <li>{{ $nutrition->name }}: {{ $nutrition->value }}</li>
-            @empty
-                <li>Tidak ada data gizi.</li>
-            @endforelse
-        </ul>
-    </div>
-
-    <a href="{{ route('customer.recipes.index') }}">
-        <button>⬅ Kembali ke Daftar Resep</button>
-    </a>
 </div>
 
-{{-- CSS sederhana --}}
-<style>
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    .recipe-header {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-        margin-bottom: 20px;
-    }
-    .recipe-photo {
-        width: 300px;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-    }
-    .recipe-title h2 {
-        margin: 0 0 10px;
-    }
-    .section {
-        margin-bottom: 25px;
-    }
-    .section h3 {
-        margin-bottom: 10px;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
-    }
-    ul, ol {
-        margin: 0;
-        padding-left: 20px;
-    }
-    select, button {
-        margin-top: 10px;
-        padding: 5px 10px;
-    }
-    button {
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #0056b3;
-    }
-</style>
+
+</div>
 @endsection

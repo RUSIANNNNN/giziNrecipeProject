@@ -18,6 +18,10 @@ return new class extends Migration
             $table->tinyInteger('rating')->comment('Nilai rating 1-5');
             $table->timestamps();
 
+            // *** TAMBAHAN PENTING: Unique Constraint ***
+            // Memastikan satu user hanya bisa memberikan satu rating per resep
+            $table->unique(['user_id', 'recipe_id']);
+
         });
     }
 

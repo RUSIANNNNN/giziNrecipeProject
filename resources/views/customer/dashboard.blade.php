@@ -9,7 +9,7 @@
         {{-- Contoh statistik sederhana, bisa ditambahkan --}}
         <div class="p-4 bg-blue-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Jumlah Resep</h2>
-            <p class="text-2xl">{{ \App\Models\Recipe::count() }}</p>
+            <p class="text-2xl">{{ $recipeCount }}</p>
         </div>
         <div class="p-4 bg-green-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Resep Favorit Anda</h2>

@@ -10,6 +10,8 @@ class Recipe extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',      // 
+        'is_official', //
         'name',
         'nutritionist',
         'duration',
@@ -45,5 +47,11 @@ class Recipe extends Model
     public function averageRating(): float
     {
         return (float) ($this->ratings()->avg('rating') ?? 0);
+    }
+
+    // Tiap resep dimiliki satu user, relasi ke user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

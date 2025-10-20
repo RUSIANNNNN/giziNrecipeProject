@@ -22,12 +22,26 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/redirect', function () {
-    if (!Auth::check()) return redirect('/login');
+    // Jika karena suatu hal user tidak login, lempar ke halaman login
+    if (!Auth::check()) {
+        return redirect('/login');
+    }
 
     $user = Auth::user();
-    if ($user->role === 'admin') return redirect()->route('admin.dashboard');
-    if ($user->role === 'customer') return redirect()->route('customer.dashboard');
-    return redirect()->route('dashboard');
+
+    // Jika role-nya admin, arahkan ke dashboard admin
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // Jika role-nya customer, arahkan ke dashboard customer
+    if ($user->role === 'customer') {
+        return redirect()->route('customer.dashboard');
+    }
+
+    // Jika tidak punya role (sebagai cadangan), arahkan ke halaman login
+    return redirect('/login');
+    
 })->name('redirect');
 
 /*
@@ -53,7 +67,8 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
     Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
 
     // List & detail resep
-    Route::resource('recipes', CustomerController::class)->only(['index', 'show']);
+    // Hapus ->only() agar semua 7 fungsi (index, create, store, show, edit, update, destroy) bisa diakses
+    Route::resource('recipes', CustomerController::class);
 });
 
 
@@ -89,8 +104,8 @@ Route::middleware('auth')->group(function () {
 | DASHBOARD UMUM
 |--------------------------------------------------------------------------
 */
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth'])->name('dashboard');
 
 require __DIR__ . '/auth.php';
