@@ -47,7 +47,7 @@ class CustomerController extends Controller
 
         $recipes = $query->paginate(10)->withQueryString();
 
-        return view('customer.recipes.index', compact('recipes'));
+        return view('customer.recipes.index-user', compact('recipes'));
     }
 
     /**
@@ -62,7 +62,7 @@ class CustomerController extends Controller
         }, 'nutritions', 'user']);
         // ========================
 
-        return view('customer.recipes.show', compact('recipe'));
+        return view('customer.recipes.show-user', compact('recipe'));
     }
 
     // ==========================================================
@@ -74,8 +74,9 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        // Ini akan mengarah ke resources/views/customer/recipes/create.blade.php
-        return view('customer.recipes.create');
+        // Ini akan mengarah ke resources/views/customer/recipes/create-user
+        // .blade.php
+        return view('customer.recipes.create-user');
     }
 
     /**
@@ -161,7 +162,7 @@ class CustomerController extends Controller
 
         $recipe->load(['ingredients', 'steps', 'nutritions']);
         // Ini akan mengarah ke resources/views/customer/recipes/edit.blade.php
-        return view('customer.recipes.edit', compact('recipe'));
+        return view('customer.recipes.edit-user', compact('recipe'));
     }
 
     /**
