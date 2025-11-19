@@ -54,6 +54,7 @@
                         @endforeach
                     </ul>
                 </div>
+<<<<<<< Updated upstream
                 
                 <!-- Gizi -->
                 <div>
@@ -76,12 +77,98 @@
                         <li>{{ $step->instruction }}</li>
                     @endforeach
                 </ol>
+=======
+                {{-- BATAS ANTARA KONTEN RESEP DAN KOMENTAR --}}
+                <hr class="my-8 border-gray-200">
+
+                {{-- BAGIAN FORUM / KOMENTAR --}}
+                <div id="forum-section">
+                    <h3 class="font-semibold text-2xl text-gray-800 mb-6 flex items-center gap-2">
+                        💬 Diskusi & Komentar
+                        <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {{ $recipe->comments->count() }}
+                        </span>
+                    </h3>
+
+                    {{-- 1. FORM TULIS KOMENTAR (Hanya jika Login) --}}
+                    @auth
+                        <form action="{{ route('comments.store', $recipe->id) }}" method="POST" class="mb-8">
+                            @csrf
+                            <div class="flex gap-4">
+                                {{-- Avatar User (Opsional, pakai inisial kalau gak ada foto) --}}
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold flex-shrink-0">
+                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                </div>
+                                
+                                <div class="flex-grow">
+                                    <textarea name="body" rows="3" 
+                                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 transition" 
+                                        placeholder="Tulis pertanyaan, saran, atau review jujur kamu di sini..." required></textarea>
+                                    
+                                    <button type="submit" class="mt-2 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                                        Kirim Komentar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                            <p class="text-yellow-700">
+                                Silakan <a href="{{ route('login') }}" class="font-bold underline hover:text-yellow-800">Login</a> untuk ikut berdiskusi atau bertanya pada resep ini.
+                            </p>
+                        </div>
+                    @endauth
+
+                    {{-- 2. DAFTAR KOMENTAR --}}
+                    <div class="space-y-6">
+                        @forelse($recipe->comments as $comment)
+                            <div class="flex gap-4">
+                                {{-- Avatar Komentator --}}
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold flex-shrink-0">
+                                    {{ substr($comment->user->name, 0, 1) }}
+                                </div>
+
+                                <div class="flex-grow bg-gray-50 p-4 rounded-lg rounded-tl-none border border-gray-100">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div>
+                                            <span class="font-bold text-gray-900">{{ $comment->user->name }}</span>
+                                            
+                                            {{-- Badge jika yang komen adalah Pembuat Resep --}}
+                                            @if($comment->user_id == $recipe->user_id)
+                                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full ml-2 font-semibold">
+                                                    Author
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    
+                                    <p class="text-gray-700 leading-relaxed">
+                                        {{ $comment->body }}
+                                    </p>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <p class="text-gray-400 italic">Belum ada diskusi di resep ini. Jadilah yang pertama bertanya!</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+>>>>>>> Stashed changes
             </div>
+            
+
         </div>
+<<<<<<< Updated upstream
     </div>
 
 </div>
 
 
 </div>
+=======
+
+
+>>>>>>> Stashed changes
 @endsection

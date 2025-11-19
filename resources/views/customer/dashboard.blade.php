@@ -10,22 +10,34 @@
         <div class="p-4 bg-blue-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Jumlah Resep</h2>
             <p class="text-2xl">{{ $recipeCount }}</p>
+            <br>
+            {{-- Tombol menuju daftar semua resep --}}
+            <a href="{{ route('customer.recipes.index') }}" 
+                class="inline-block px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors">
+                Lihat Semua Resep
+            </a>
         </div>
         <div class="p-4 bg-green-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Resep Favorit Anda</h2>
+<<<<<<< Updated upstream
             <p class="text-2xl">-</p>
+=======
+            <p class="text-2xl">{{ $bookmarksCount }}</p>
+            <br>
+            <a href="{{ route('bookmarks.index') }}" class="inline-block px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors">
+                Lihat Favorit
+            </a>
+>>>>>>> Stashed changes
         </div>
+        {{-- TOMBOL BARU: Klik untuk melihat daftar favorit --}}
+        
+     
         <div class="p-4 bg-yellow-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Rating Rata-rata</h2>
             <p class="text-2xl">-</p>
         </div>
     </div>
 
-    {{-- Tombol menuju daftar semua resep --}}
-    <a href="{{ route('customer.recipes.index') }}" 
-        class="px-6 py-3 bg-green-600 text-black font-semibold rounded hover:bg-green-700">
-        Lihat Semua Resep
-    </a>
 
 </div>
 @endsection

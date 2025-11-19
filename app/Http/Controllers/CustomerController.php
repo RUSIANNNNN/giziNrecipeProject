@@ -57,9 +57,13 @@ class CustomerController extends Controller
     {
         // === UPDATE FUNGSI INI ===
         // Tambahkan 'user' di load() agar kita tahu siapa yang posting
-        $recipe->load(['ingredients', 'steps' => function($q){
-            $q->orderBy('order');
-        }, 'nutritions', 'user']);
+        $recipe->load([
+            'ingredients', 
+            'steps' => function($q){$q->orderBy('order');}, 
+            'nutritions', 
+            'user',
+            'comments.user' 
+        ]);
         // ========================
 
         return view('customer.recipes.show-user', compact('recipe'));

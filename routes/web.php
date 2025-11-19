@@ -6,6 +6,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\ProfileController;
+<<<<<<< Updated upstream
+=======
+use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\CommentController; 
+>>>>>>> Stashed changes
 
 /*
 |--------------------------------------------------------------------------
@@ -108,4 +113,19 @@ Route::middleware('auth')->group(function () {
 //     return view('dashboard');
 // })->middleware(['auth'])->name('dashboard');
 
+<<<<<<< Updated upstream
+=======
+
+// Pastikan ini ada di dalam group middleware 'auth'(karena cuma user login yang boleh simpan)
+Route::middleware(['auth'])->group(function () {
+    
+    // Rute untuk simpan/hapus bookmark
+    Route::post('/recipes/{recipe}/bookmark', [BookmarkController::class, 'toggle'])->name('recipes.bookmark');
+    // Rute Halaman Daftar Favorit 
+    Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
+    // Rute Komentar
+    Route::post('/recipes/{recipe}/comments', [CommentController::class, 'store'])->name('comments.store');
+});
+
+>>>>>>> Stashed changes
 require __DIR__ . '/auth.php';
