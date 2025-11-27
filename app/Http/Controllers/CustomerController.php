@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Recipe;
-use App\Models\Ingredient; // <-- TAMBAHKAN INI
-use App\Models\Step;       // <-- TAMBAHKAN INI
-use App\Models\Nutrition;  // <-- TAMBAHKAN INI
-use Illuminate\Support\Facades\Storage;  // <-- TAMBAHKAN INI
-use Illuminate\Support\Facades\Auth;      // <-- TAMBAHKAN INI
-use App\Models\Bookmark; // <--- JANGAN LUPA TAMBAHKAN INI
+use App\Models\Ingredient; 
+use App\Models\Step;       
+use App\Models\Nutrition;  
+use Illuminate\Support\Facades\Storage;  
+use Illuminate\Support\Facades\Auth;      
+use App\Models\Bookmark; 
 
 class CustomerController extends Controller
 {
@@ -18,7 +18,6 @@ class CustomerController extends Controller
      */
     public function dashboard()
     {
-        // === UPDATE FUNGSI INI ===
         // Ambil ID user yang sedang login
         $userId = Auth::id();
 
@@ -29,7 +28,6 @@ class CustomerController extends Controller
         $bookmarksCount = Bookmark::where('user_id', $userId)->count();
         // Kirim data ke view
         return view('customer.dashboard', compact('recipeCount', 'bookmarksCount'));
-        // ========================
     }
 
     /**
@@ -37,7 +35,6 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        // === UPDATE FUNGSI INI ===
         // Tambahkan with('user') untuk optimasi & menampilkan nama poster
         // Tambahkan latest() agar yang terbaru muncul di atas
         $query = Recipe::with('user')->latest();
@@ -58,19 +55,13 @@ class CustomerController extends Controller
      */
     public function show(Recipe $recipe)
     {
-        // === UPDATE FUNGSI INI ===
         // Tambahkan 'user' di load() agar kita tahu siapa yang posting
         $recipe->load(['ingredients', 'steps' => function($q){
             $q->orderBy('order');
         }, 'nutritions', 'user']);
-        // ========================
 
         return view('customer.recipes.show-user', compact('recipe'));
     }
-
-    // ==========================================================
-    // === TAMBAHKAN SEMUA FUNGSI BARU DI BAWAH INI ===
-    // ==========================================================
 
     /**
      * FITUR 2: MENAMPILKAN FORM TAMBAH RESEP
