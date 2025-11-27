@@ -9,6 +9,7 @@ use App\Models\Step;       // <-- TAMBAHKAN INI
 use App\Models\Nutrition;  // <-- TAMBAHKAN INI
 use Illuminate\Support\Facades\Storage;  // <-- TAMBAHKAN INI
 use Illuminate\Support\Facades\Auth;      // <-- TAMBAHKAN INI
+use App\Models\Bookmark; // <--- JANGAN LUPA TAMBAHKAN INI
 
 class CustomerController extends Controller
 {
@@ -21,11 +22,13 @@ class CustomerController extends Controller
         // Ambil ID user yang sedang login
         $userId = Auth::id();
 
-        // Hitung resep yang DI-POST OLEH user ini saja
+        // 1. Hitung Resep yang DI-POST OLEH user ini (Untuk kotak "Jumlah Resep")
+        // Saya namakan $myRecipesCount agar sesuai dengan tutorial sebelumnya       
         $recipeCount = Recipe::where('user_id', $userId)->count();
-        
+        // 2. Hitung Resep yang DISIMPAN/BOOKMARK user ini (Untuk kotak "Resep Favorit")
+        $bookmarksCount = Bookmark::where('user_id', $userId)->count();
         // Kirim data ke view
-        return view('customer.dashboard', compact('recipeCount'));
+        return view('customer.dashboard', compact('recipeCount', 'bookmarksCount'));
         // ========================
     }
 
@@ -223,7 +226,7 @@ class CustomerController extends Controller
             }
         }
 
-        return redirect()->route('customer.dashboard')->with('success', 'Resep berhasil diupdate!');
+        return redirect()->route('customer.recipes.show', $recipe->id)->with('success', 'Resep berhasil diupdate!');
     }
 
     /**

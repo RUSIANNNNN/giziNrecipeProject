@@ -54,4 +54,16 @@ class Recipe extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    // Fitur Tambahan: Cek apakah resep ini dibookmark oleh user yang sedang login
+    public function isBookmarkedBy($user)
+    {
+        if (!$user) return false;
+        return $this->bookmarks->where('user_id', $user->id)->count() > 0;
+    }
 }

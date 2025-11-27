@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BookmarkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +70,7 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
     // List & detail resep
     // Hapus ->only() agar semua 7 fungsi (index, create, store, show, edit, update, destroy) bisa diakses
     Route::resource('recipes', CustomerController::class);
+    
 });
 
 
@@ -107,5 +109,14 @@ Route::middleware('auth')->group(function () {
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth'])->name('dashboard');
+
+
+// Pastikan ini ada di dalam group middleware 'auth'(karena cuma user login yang boleh simpan)
+Route::middleware(['auth'])->group(function () {
+    
+    // Rute untuk simpan/hapus bookmark
+    Route::post('/recipes/{recipe}/bookmark', [BookmarkController::class, 'toggle'])->name('recipes.bookmark');
+
+});
 
 require __DIR__ . '/auth.php';

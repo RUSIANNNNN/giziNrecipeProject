@@ -13,7 +13,7 @@
         </div>
         <div class="p-4 bg-green-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Resep Favorit Anda</h2>
-            <p class="text-2xl">-</p>
+            <p class="text-2xl">{{ $bookmarksCount }}</p>
         </div>
         <div class="p-4 bg-yellow-100 rounded shadow">
             <h2 class="text-lg font-semibold mb-2">Rating Rata-rata</h2>
