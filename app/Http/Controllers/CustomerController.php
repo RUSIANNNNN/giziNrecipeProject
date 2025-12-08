@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Recipe;
-use App\Models\Ingredient;
-use App\Models\Step;
-use App\Models\Nutrition;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Bookmark;
+use App\Models\Ingredient;
+use App\Models\Nutrition;
+use App\Models\Recipe;
+use App\Models\Step;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
 {
@@ -41,21 +41,19 @@ class CustomerController extends Controller
             ->withCount('comments')
             ->latest();
 
-
         // Fitur pencarian: nama resep, durasi, deskripsi, dan nama pembuat
         if ($request->filled('search')) {
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('duration', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('duration', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
                     ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('name', 'like', '%' . $search . '%');
+                        $userQuery->where('name', 'like', '%'.$search.'%');
                     });
             });
         }
-
 
         // Filter berdasarkan jenis resep (komunitas / official)
         if ($request->type === 'komunitas') {
@@ -65,7 +63,6 @@ class CustomerController extends Controller
         if ($request->type === 'official') {
             $query->where('is_official', true);
         }
-
 
         $recipes = $query->paginate(10)->withQueryString();
 
@@ -150,7 +147,7 @@ class CustomerController extends Controller
         // Simpan ingredients
         if ($request->ingredients) {
             foreach ($request->ingredients as $ingredient) {
-                if (!empty($ingredient)) {
+                if (! empty($ingredient)) {
                     Ingredient::create([
                         'recipe_id' => $recipe->id,
                         'item' => $ingredient,
@@ -162,7 +159,7 @@ class CustomerController extends Controller
         // Simpan steps
         if ($request->steps) {
             foreach ($request->steps as $index => $step) {
-                if (!empty($step)) {
+                if (! empty($step)) {
                     Step::create([
                         'recipe_id' => $recipe->id,
                         'instruction' => $step,
@@ -175,7 +172,7 @@ class CustomerController extends Controller
         // Simpan nutritions
         if ($request->nutritions) {
             foreach ($request->nutritions as $nutrition) {
-                if (!empty($nutrition['name']) && !empty($nutrition['amount'])) {
+                if (! empty($nutrition['name']) && ! empty($nutrition['amount'])) {
                     Nutrition::create([
                         'recipe_id' => $recipe->id,
                         'name' => $nutrition['name'],
@@ -247,10 +244,10 @@ class CustomerController extends Controller
         // Simpan ulang ingredients
         if ($request->ingredients) {
             foreach ($request->ingredients as $ingredient) {
-                if (!empty($ingredient)) {
+                if (! empty($ingredient)) {
                     Ingredient::create([
                         'recipe_id' => $recipe->id,
-                        'item' => $ingredient
+                        'item' => $ingredient,
                     ]);
                 }
             }
@@ -259,11 +256,11 @@ class CustomerController extends Controller
         // Simpan ulang steps
         if ($request->steps) {
             foreach ($request->steps as $index => $step) {
-                if (!empty($step)) {
+                if (! empty($step)) {
                     Step::create([
                         'recipe_id' => $recipe->id,
                         'instruction' => $step,
-                        'order' => $index + 1
+                        'order' => $index + 1,
                     ]);
                 }
             }
@@ -272,11 +269,11 @@ class CustomerController extends Controller
         // Simpan ulang nutritions
         if ($request->nutritions) {
             foreach ($request->nutritions as $nutrition) {
-                if (!empty($nutrition['name']) && !empty($nutrition['amount'])) {
+                if (! empty($nutrition['name']) && ! empty($nutrition['amount'])) {
                     Nutrition::create([
                         'recipe_id' => $recipe->id,
                         'name' => $nutrition['name'],
-                        'value' => $nutrition['amount']
+                        'value' => $nutrition['amount'],
                     ]);
                 }
             }
@@ -308,21 +305,26 @@ class CustomerController extends Controller
     public function compare(Request $request)
     {
         $recipe1Id = $request->query('recipe1');
+        $recipe2Id = $request->query('recipe2');
 
-        if (!$recipe1Id) {
-            abort(404, 'Resep pertama tidak ditemukan.');
+        if (! $recipe1Id) {
+            $recipes = Recipe::orderBy('name')
+                ->get(['id', 'name', 'is_official']);
+
+            return view('customer.recipes.compare-user', [
+                'recipe1' => null,
+                'recipe2' => null,
+                'otherRecipes' => $recipes, // dipakai sebagai list pilihan resep pertama
+            ]);
         }
 
-        // Resep pertama: lengkap dengan relasi & statistik
         $recipe1 = Recipe::with(['user', 'ingredients', 'nutritions', 'steps'])
             ->withAvg('ratings', 'rating')
             ->withCount(['ratings', 'comments'])
             ->findOrFail($recipe1Id);
 
         // Resep kedua (jika sudah dipilih)
-        $recipe2Id = $request->query('recipe2');
         $recipe2 = null;
-
         if ($recipe2Id) {
             $recipe2 = Recipe::with(['user', 'ingredients', 'nutritions', 'steps'])
                 ->withAvg('ratings', 'rating')
@@ -336,9 +338,14 @@ class CustomerController extends Controller
             ->get(['id', 'name', 'is_official']);
 
         return view('customer.recipes.compare-user', [
-            'recipe1'      => $recipe1,
-            'recipe2'      => $recipe2,
+            'recipe1' => $recipe1,
+            'recipe2' => $recipe2,
             'otherRecipes' => $otherRecipes,
         ]);
+    }
+
+    public function createRules()
+    {
+        return view('customer.recipes.create-rules');
     }
 }

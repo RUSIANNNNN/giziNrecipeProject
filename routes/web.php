@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\RatingController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CommentController;
-
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RatingController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +25,7 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/redirect', function () {
-    if (!Auth::check()) {
+    if (! Auth::check()) {
         return redirect('/login');
     }
 
@@ -60,7 +59,6 @@ Route::middleware(['auth', 'role:admin'])
             ->name('recipes.comments.destroy');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Customer Routes
@@ -75,9 +73,11 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/recipes/compare', [CustomerController::class, 'compare'])
             ->name('recipes.compare');
 
+        Route::get('/recipes/create-rules', [CustomerController::class, 'createRules'])
+            ->name('recipes.create-rules');
+
         Route::resource('recipes', CustomerController::class);
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -107,4 +107,4 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

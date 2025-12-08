@@ -17,12 +17,6 @@
                     informasi gizinya.
                 </p>
             </div>
-
-            <a href="{{ route('customer.recipes.create') }}"
-                class="inline-flex items-center gap-2 rounded-sm bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
-                <span class="material-symbols-outlined text-sm">Tambah Resep Kamu</span>
-
-            </a>
         </div>
 
         <div class="bg-white border border-neutral-100 rounded-sm p-4">

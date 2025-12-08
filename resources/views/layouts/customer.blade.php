@@ -52,7 +52,18 @@
                             class="{{ request()->routeIs('bookmarks.*') ? 'text-emerald-400' : 'text-white hover:text-neutral-200' }}">
                             Resep Favorit
                         </a>
+
+                        <a href="{{ route('customer.recipes.create-rules') }}"
+                            class="{{ request()->routeIs('customer.recipes.create-rules') ? 'text-emerald-400' : 'text-white hover:text-neutral-200' }}">
+                            Buat Resep
+                        </a>
+
+                        <a href="{{ route('customer.recipes.compare') }}"
+                            class="{{ request()->routeIs('customer.recipes.compare') ? 'text-emerald-400' : 'text-white hover:text-neutral-200' }}">
+                            Bandingkan Resep
+                        </a>
                     @endauth
+
 
                     <a href="{{ route('about') }}"
                         class="{{ request()->routeIs('about') ? 'text-emerald-400' : 'text-white hover:text-neutral-200' }}">

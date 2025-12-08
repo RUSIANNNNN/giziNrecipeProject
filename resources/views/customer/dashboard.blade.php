@@ -117,6 +117,12 @@
                 </a>
             </div>
 
+            <a href="{{ route('customer.recipes.create-rules') }}"
+                class="inline-flex items-center gap-2 rounded-sm bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>Buat Resep Baru</span>
+            </a>
+
             <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-4 flex flex-col gap-2">
                 <h2 class="text-sm font-semibold text-slate-900">Perbarui profilmu</h2>
                 <p class="text-xs text-slate-500">

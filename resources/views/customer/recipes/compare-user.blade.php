@@ -4,150 +4,200 @@
 @section('title', 'Bandingkan Resep | NutriRecipe')
 
 @section('content')
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <div>
+            <a href="{{ route('customer.recipes.index') }}"
+                class="inline-flex items-center text-sm font-medium text-neutral-400 hover:text-neutral-600 gap-2 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+                Kembali ke daftar resep
+            </a>
+        </div>
 
         {{-- Header --}}
         <section class="space-y-2">
-            <p class="text-xs font-semibold tracking-[0.25em] text-neutral-400 uppercase">
-                Perbandingan Resep
-            </p>
             <h1 class="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900">
                 Bandingkan Resep
             </h1>
-            <p class="max-w-2xl text-sm text-neutral-500">
-                Pilih dua resep untuk dibandingkan secara berdampingan.
-                Kamu sedang menjadikan <span class="font-semibold text-neutral-800">{{ $recipe1->name }}</span>
-                sebagai resep pertama.
-            </p>
+
+            @if ($recipe1)
+                <p class="max-w-2xl text-sm text-neutral-500">
+                    Pilih dua resep untuk dibandingkan secara berdampingan.
+                    Kamu sedang menjadikan
+                    <span class="font-semibold text-neutral-800">{{ $recipe1->name }}</span>
+                    sebagai resep pertama.
+                </p>
+            @else
+                <p class="max-w-2xl text-sm text-neutral-500">
+                    Mulai dengan memilih resep pertama yang ingin kamu jadikan acuan, lalu pilih resep pembandingnya.
+                </p>
+            @endif
         </section>
 
-        {{-- Dua kolom: resep pertama & slot resep kedua --}}
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {{-- Resep 1 --}}
-            <div class="bg-white border border-neutral-100 rounded-sm p-5 space-y-3">
+        @if (!$recipe1)
+            {{-- STATE: Belum memilih resep pertama (akses dari navbar) --}}
+            <section class="bg-white border border-neutral-100 rounded-sm p-6 space-y-4">
                 <p class="text-xs font-bold tracking-wider uppercase text-neutral-400">
-                    Resep Pertama
+                    Pilih Resep Pertama
+                </p>
+                <p class="text-sm text-neutral-600">
+                    Mulai dengan memilih satu resep yang ingin kamu jadikan patokan perbandingan.
                 </p>
 
-                <h2 class="text-lg font-semibold text-neutral-900">
-                    {{ $recipe1->name }}
-                </h2>
+                <form action="{{ route('customer.recipes.compare') }}" method="GET" class="space-y-3">
+                    <label class="block text-xs font-medium text-neutral-700 mb-1">
+                        Resep pertama
+                    </label>
+                    <select name="recipe1"
+                        class="w-full rounded-sm border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        required>
+                        <option value="" disabled selected>-- Pilih salah satu resep --</option>
+                        @foreach ($otherRecipes as $r)
+                            <option value="{{ $r->id }}">
+                                {{ $r->name }} {{ $r->is_official ? '(Official)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
 
-                <p class="text-xs text-neutral-500">
-                    Oleh:
-                    @if ($recipe1->is_official)
-                        <span class="font-medium text-neutral-800">
-                            Pakar Gizi ({{ $recipe1->nutritionist }})
-                        </span>
-                    @else
-                        <span class="font-medium text-neutral-800">
-                            {{ $recipe1->user->name ?? 'User' }}
-                        </span>
-                    @endif
-                </p>
-
-                <p
-                    class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide
-                    {{ $recipe1->is_official ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500' }}">
-                    {{ $recipe1->is_official ? 'Resep Official' : 'Resep Komunitas' }}
-                </p>
-
-                @if ($recipe1->duration)
-                    <p class="text-xs text-neutral-500 mt-1">
-                        Durasi: <span class="font-medium text-neutral-800">{{ $recipe1->duration }}</span>
-                    </p>
-                @endif
-
-                @if ($recipe1->description)
-                    <p class="mt-2 text-sm text-neutral-600 line-clamp-3">
-                        {{ \Illuminate\Support\Str::limit($recipe1->description, 160) }}
-                    </p>
-                @endif
-            </div>
-
-            {{-- Resep 2 / Pemilihan --}}
-            <div class="bg-white border border-neutral-100 rounded-sm p-5 space-y-4">
-                <p class="text-xs font-bold tracking-wider uppercase text-neutral-400">
-                    Resep Pembanding
-                </p>
-
-                @if (!$recipe2)
-                    {{-- State: belum ada resep kedua, tampilkan form pilih --}}
-                    <p class="text-sm text-neutral-600">
-                        Pilih satu resep lain untuk dibandingkan dengan
-                        <span class="font-semibold text-neutral-800">{{ $recipe1->name }}</span>.
+                    <button type="submit"
+                        class="inline-flex items-center rounded-sm bg-neutral-900 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-neutral-800">
+                        Lanjutkan
+                    </button>
+                </form>
+            </section>
+        @else
+            {{-- STATE: Sudah memilih resep pertama (dan mungkin resep kedua) --}}
+            {{-- Dua kolom: resep pertama & slot resep kedua --}}
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Resep 1 --}}
+                <div class="bg-white border border-neutral-100 rounded-sm p-5 space-y-3">
+                    <p class="text-xs font-bold tracking-wider uppercase text-neutral-400">
+                        Resep Pertama
                     </p>
 
-                    <form action="{{ route('customer.recipes.compare') }}" method="GET" class="space-y-3">
-                        {{-- kirim recipe1 sebagai hidden --}}
-                        <input type="hidden" name="recipe1" value="{{ $recipe1->id }}">
-
-                        <label class="block text-xs font-medium text-neutral-700 mb-1">
-                            Pilih resep kedua
-                        </label>
-                        <select name="recipe2"
-                            class="w-full rounded-sm border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                            required>
-                            <option value="" disabled selected>-- Pilih salah satu resep --</option>
-                            @foreach ($otherRecipes as $r)
-                                <option value="{{ $r->id }}">
-                                    {{ $r->name }} {{ $r->is_official ? '(Official)' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <button type="submit"
-                            class="inline-flex items-center rounded-sm bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-emerald-700">
-                            Bandingkan
-                        </button>
-                    </form>
-                @else
-                    {{-- State: sudah ada dua resep --}}
                     <h2 class="text-lg font-semibold text-neutral-900">
-                        {{ $recipe2->name }}
+                        {{ $recipe1->name }}
                     </h2>
 
                     <p class="text-xs text-neutral-500">
                         Oleh:
-                        @if ($recipe2->is_official)
+                        @if ($recipe1->is_official)
                             <span class="font-medium text-neutral-800">
-                                Pakar Gizi ({{ $recipe2->nutritionist }})
+                                Pakar Gizi ({{ $recipe1->nutritionist }})
                             </span>
                         @else
                             <span class="font-medium text-neutral-800">
-                                {{ $recipe2->user->name ?? 'User' }}
+                                {{ $recipe1->user->name ?? 'User' }}
                             </span>
                         @endif
                     </p>
 
                     <p
                         class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide
-                        {{ $recipe2->is_official ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500' }}">
-                        {{ $recipe2->is_official ? 'Resep Official' : 'Resep Komunitas' }}
+                    {{ $recipe1->is_official ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500' }}">
+                        {{ $recipe1->is_official ? 'Resep Official' : 'Resep Komunitas' }}
                     </p>
 
-                    @if ($recipe2->duration)
+                    @if ($recipe1->duration)
                         <p class="text-xs text-neutral-500 mt-1">
-                            Durasi: <span class="font-medium text-neutral-800">{{ $recipe2->duration }}</span>
+                            Durasi: <span class="font-medium text-neutral-800">{{ $recipe1->duration }}</span>
                         </p>
                     @endif
 
-                    @if ($recipe2->description)
+                    @if ($recipe1->description)
                         <p class="mt-2 text-sm text-neutral-600 line-clamp-3">
-                            {{ \Illuminate\Support\Str::limit($recipe2->description, 160) }}
+                            {{ \Illuminate\Support\Str::limit($recipe1->description, 160) }}
                         </p>
                     @endif
+                </div>
 
-                    <div class="pt-3 border-t border-neutral-100 mt-3">
-                        <a href="{{ route('customer.recipes.compare', ['recipe1' => $recipe1->id]) }}"
-                            class="inline-flex items-center rounded-sm border border-neutral-300 bg-white px-3 py-1.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-50">
-                            Ganti resep pembanding
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </section>
-                {{-- Perbandingan detail, hanya jika resep kedua sudah dipilih --}}
+                {{-- Resep 2 / Pemilihan --}}
+                <div class="bg-white border border-neutral-100 rounded-sm p-5 space-y-4">
+                    <p class="text-xs font-bold tracking-wider uppercase text-neutral-400">
+                        Resep Pembanding
+                    </p>
+
+                    @if (!$recipe2)
+                        {{-- State: belum ada resep kedua, tampilkan form pilih --}}
+                        <p class="text-sm text-neutral-600">
+                            Pilih satu resep lain untuk dibandingkan dengan
+                            <span class="font-semibold text-neutral-800">{{ $recipe1->name }}</span>.
+                        </p>
+
+                        <form action="{{ route('customer.recipes.compare') }}" method="GET" class="space-y-3">
+                            {{-- kirim recipe1 sebagai hidden --}}
+                            <input type="hidden" name="recipe1" value="{{ $recipe1->id }}">
+
+                            <label class="block text-xs font-medium text-neutral-700 mb-1">
+                                Pilih resep kedua
+                            </label>
+                            <select name="recipe2"
+                                class="w-full rounded-sm border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                                <option value="" disabled selected>-- Pilih salah satu resep --</option>
+                                @foreach ($otherRecipes as $r)
+                                    <option value="{{ $r->id }}">
+                                        {{ $r->name }} {{ $r->is_official ? '(Official)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <button type="submit"
+                                class="inline-flex items-center rounded-sm bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-emerald-700">
+                                Bandingkan
+                            </button>
+                        </form>
+                    @else
+                        {{-- State: sudah ada dua resep, tampilkan ringkasan resep pembanding --}}
+                        <h2 class="text-lg font-semibold text-neutral-900">
+                            {{ $recipe2->name }}
+                        </h2>
+
+                        <p class="text-xs text-neutral-500">
+                            Oleh:
+                            @if ($recipe2->is_official)
+                                <span class="font-medium text-neutral-800">
+                                    Pakar Gizi ({{ $recipe2->nutritionist }})
+                                </span>
+                            @else
+                                <span class="font-medium text-neutral-800">
+                                    {{ $recipe2->user->name ?? 'User' }}
+                                </span>
+                            @endif
+                        </p>
+
+                        <p
+                            class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide
+                            {{ $recipe2->is_official ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500' }}">
+                            {{ $recipe2->is_official ? 'Resep Official' : 'Resep Komunitas' }}
+                        </p>
+
+                        @if ($recipe2->duration)
+                            <p class="text-xs text-neutral-500 mt-1">
+                                Durasi: <span class="font-medium text-neutral-800">{{ $recipe2->duration }}</span>
+                            </p>
+                        @endif
+
+                        @if ($recipe2->description)
+                            <p class="mt-2 text-sm text-neutral-600 line-clamp-3">
+                                {{ \Illuminate\Support\Str::limit($recipe2->description, 160) }}
+                            </p>
+                        @endif
+
+                        <div class="pt-3 border-t border-neutral-100 mt-3">
+                            <a href="{{ route('customer.recipes.compare', ['recipe1' => $recipe1->id]) }}"
+                                class="inline-flex items-center rounded-sm border border-neutral-300 bg-white px-3 py-1.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-50">
+                                Ganti resep pembanding
+                            </a>
+                        </div>
+                    @endif
+
+                </div>
+            </section>
+        @endif
+
+        {{-- Perbandingan detail, hanya jika resep kedua sudah dipilih --}}
         @if ($recipe2)
             <section class="bg-white border border-neutral-100 rounded-sm p-6 space-y-6 mt-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -156,7 +206,8 @@
                             Perbandingan Detail
                         </h2>
                         <p class="text-xs sm:text-sm text-neutral-500 mt-1">
-                            Melihat dua resep berdampingan membantu kamu memilih mana yang paling pas dengan kebutuhan gizi dan waktumu.
+                            Melihat dua resep berdampingan membantu kamu memilih mana yang paling pas dengan kebutuhan gizi
+                            dan waktumu.
                         </p>
                     </div>
                     <div class="text-xs text-neutral-500">
@@ -346,7 +397,8 @@
                             </ol>
                             @if ($recipe1->steps->count() > 5)
                                 <p class="mt-1 text-[11px] text-neutral-500">
-                                    {{ $recipe1->steps->count() - 5 }} langkah lainnya dapat dilihat di halaman detail resep.
+                                    {{ $recipe1->steps->count() - 5 }} langkah lainnya dapat dilihat di halaman detail
+                                    resep.
                                 </p>
                             @endif
                         @endif
@@ -366,7 +418,8 @@
                             </ol>
                             @if ($recipe2->steps->count() > 5)
                                 <p class="mt-1 text-[11px] text-neutral-500">
-                                    {{ $recipe2->steps->count() - 5 }} langkah lainnya dapat dilihat di halaman detail resep.
+                                    {{ $recipe2->steps->count() - 5 }} langkah lainnya dapat dilihat di halaman detail
+                                    resep.
                                 </p>
                             @endif
                         @endif
@@ -374,17 +427,19 @@
                 </div>
 
                 {{-- CTA ke detail --}}
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-neutral-100">
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-neutral-100">
                     <p class="text-xs sm:text-sm text-neutral-600">
-                        Ingin melihat detail penuh salah satu resep? Buka halaman resep untuk rating, komentar, dan informasi lengkapnya.
+                        Ingin melihat detail penuh salah satu resep? Buka halaman resep untuk rating, komentar, dan
+                        informasi lengkapnya.
                     </p>
                     <div class="flex flex-wrap gap-2">
                         <a href="{{ route('customer.recipes.show', $recipe1->id) }}"
-                           class="inline-flex items-center rounded-sm bg-neutral-900 px-3 py-1.5 text-[11px] sm:text-xs font-medium text-white hover:bg-neutral-800">
+                            class="inline-flex items-center rounded-sm bg-neutral-900 px-3 py-1.5 text-[11px] sm:text-xs font-medium text-white hover:bg-neutral-800">
                             Lihat detail {{ \Illuminate\Support\Str::limit($recipe1->name, 24) }}
                         </a>
                         <a href="{{ route('customer.recipes.show', $recipe2->id) }}"
-                           class="inline-flex items-center rounded-sm border border-neutral-300 bg-white px-3 py-1.5 text-[11px] sm:text-xs font-medium text-neutral-800 hover:bg-neutral-50">
+                            class="inline-flex items-center rounded-sm border border-neutral-300 bg-white px-3 py-1.5 text-[11px] sm:text-xs font-medium text-neutral-800 hover:bg-neutral-50">
                             Lihat detail {{ \Illuminate\Support\Str::limit($recipe2->name, 24) }}
                         </a>
                     </div>
@@ -392,6 +447,6 @@
             </section>
         @endif
 
-        
+
     </div>
 @endsection
