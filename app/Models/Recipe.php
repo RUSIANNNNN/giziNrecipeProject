@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Recipe extends Model
 {
@@ -18,6 +19,27 @@ class Recipe extends Model
         'description',
         'photo',
     ];
+
+    public function getPhotoUrlAttribute(): string
+    {
+        // jika tidak ada foto sama sekali
+        if (!$this->photo) {
+            return '';
+        }
+
+        // kalau sudah berupa URL penuh
+        if (Str::startsWith($this->photo, ['http://', 'https://'])) {
+            return $this->photo;
+        }
+
+        // foto dari seeder: disimpan di public/img/...
+        if (Str::startsWith($this->photo, ['img/', 'images/', 'recipe images/'])) {
+            return asset($this->photo);
+        }
+
+        // default: foto upload yang disimpan di storage/app/public
+        return asset('storage/' . $this->photo);
+    }
 
     // Relasi ke ingredients
     public function ingredients()
@@ -60,7 +82,11 @@ class Recipe extends Model
         return $this->hasMany(Bookmark::class);
     }
 
-    // Fitur Tambahan: Cek apakah resep ini dibookmark oleh user yang sedang login
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function isBookmarkedBy($user)
     {
         if (!$user) return false;

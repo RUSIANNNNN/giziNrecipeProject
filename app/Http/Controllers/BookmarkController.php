@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/BookmarkController.php
 
 namespace App\Http\Controllers;
 
@@ -31,5 +32,48 @@ class BookmarkController extends Controller
             ]);
             return back()->with('success', 'Resep berhasil disimpan!');
         }
+    }
+
+    // Daftar resep yang dibookmark user
+    public function index(Request $request)
+    {
+        $userId = Auth::id();
+
+        // Ambil hanya resep yang dibookmark oleh user ini
+        $query = Recipe::with('user')
+            ->withAvg('ratings', 'rating')
+            ->withCount('comments')
+            ->whereHas('bookmarks', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->latest();
+
+        // Pencarian (nama, durasi, deskripsi, nama pembuat)
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('duration', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        // Filter berdasarkan jenis resep (komunitas / official)
+        if ($request->type === 'komunitas') {
+            $query->where('is_official', false);
+        }
+
+        if ($request->type === 'official') {
+            $query->where('is_official', true);
+        }
+
+        // Paginasi
+        $recipes = $query->paginate(9)->withQueryString();
+
+        return view('customer.bookmarks.index', compact('recipes'));
     }
 }

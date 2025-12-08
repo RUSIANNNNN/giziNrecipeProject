@@ -4,49 +4,68 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Recipe;
-use App\Models\Ingredient; // <-- TAMBAHKAN INI
-use App\Models\Step;       // <-- TAMBAHKAN INI
-use App\Models\Nutrition;  // <-- TAMBAHKAN INI
-use Illuminate\Support\Facades\Storage;  // <-- TAMBAHKAN INI
-use Illuminate\Support\Facades\Auth;      // <-- TAMBAHKAN INI
-use App\Models\Bookmark; // <--- JANGAN LUPA TAMBAHKAN INI
+use App\Models\Ingredient;
+use App\Models\Step;
+use App\Models\Nutrition;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Bookmark;
 
 class CustomerController extends Controller
 {
     /**
-     * Dashboard customer
+     * Dashboard customer.
+     * Menampilkan ringkasan jumlah resep milik user dan jumlah bookmark.
      */
     public function dashboard()
     {
-        // === UPDATE FUNGSI INI ===
-        // Ambil ID user yang sedang login
         $userId = Auth::id();
 
-        // 1. Hitung Resep yang DI-POST OLEH user ini (Untuk kotak "Jumlah Resep")
-        // Saya namakan $myRecipesCount agar sesuai dengan tutorial sebelumnya       
+        // Hitung resep yang dibuat oleh user
         $recipeCount = Recipe::where('user_id', $userId)->count();
-        // 2. Hitung Resep yang DISIMPAN/BOOKMARK user ini (Untuk kotak "Resep Favorit")
+
+        // Hitung resep yang dibookmark oleh user
         $bookmarksCount = Bookmark::where('user_id', $userId)->count();
-        // Kirim data ke view
+
         return view('customer.dashboard', compact('recipeCount', 'bookmarksCount'));
-        // ========================
     }
 
     /**
-     * Menampilkan daftar semua resep
+     * Menampilkan daftar semua resep (list resep user & admin).
      */
     public function index(Request $request)
     {
-        // === UPDATE FUNGSI INI ===
-        // Tambahkan with('user') untuk optimasi & menampilkan nama poster
-        // Tambahkan latest() agar yang terbaru muncul di atas
-        $query = Recipe::with('user')->latest();
-        // ========================
+        // Query dasar: load relasi user, rata-rata rating, dan jumlah komentar
+        $query = Recipe::with('user')
+            ->withAvg('ratings', 'rating')
+            ->withCount('comments')
+            ->latest();
 
-        // Logika search-mu sudah bagus, kita pertahankan
-        if ($request->has('search') && !empty($request->search)) { 
-            $query->where('name', 'like', '%' . $request->search . '%');
+
+        // Fitur pencarian: nama resep, durasi, deskripsi, dan nama pembuat
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('duration', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
         }
+
+
+        // Filter berdasarkan jenis resep (komunitas / official)
+        if ($request->type === 'komunitas') {
+            $query->where('is_official', false);
+        }
+
+        if ($request->type === 'official') {
+            $query->where('is_official', true);
+        }
+
 
         $recipes = $query->paginate(10)->withQueryString();
 
@@ -54,39 +73,54 @@ class CustomerController extends Controller
     }
 
     /**
-     * Menampilkan detail resep
+     * Menampilkan detail satu resep.
      */
     public function show(Recipe $recipe)
     {
-        // === UPDATE FUNGSI INI ===
-        // Tambahkan 'user' di load() agar kita tahu siapa yang posting
-        $recipe->load(['ingredients', 'steps' => function($q){
-            $q->orderBy('order');
-        }, 'nutritions', 'user']);
-        // ========================
+        // Load relasi yang dibutuhkan untuk tampilan detail
+        $recipe->load([
+            'ingredients',
+            'steps' => function ($q) {
+                $q->orderBy('order');
+            },
+            'nutritions',
+            'user',
+            'ratings.user',
+            'comments.user',
+        ])->loadCount('ratings');
 
-        return view('customer.recipes.show-user', compact('recipe'));
+        $averageRating = $recipe->averageRating();
+
+        $userRating = null;
+        if (Auth::check()) {
+            $userRating = $recipe->ratings->firstWhere('user_id', Auth::id());
+        }
+
+        // urutkan komentar terbaru di atas
+        $comments = $recipe->comments->sortByDesc('created_at');
+
+        return view('customer.recipes.show-user', compact(
+            'recipe',
+            'averageRating',
+            'userRating',
+            'comments'
+        ));
     }
 
-    // ==========================================================
-    // === TAMBAHKAN SEMUA FUNGSI BARU DI BAWAH INI ===
-    // ==========================================================
-
     /**
-     * FITUR 2: MENAMPILKAN FORM TAMBAH RESEP
+     * Menampilkan form tambah resep.
      */
     public function create()
     {
-        // Ini akan mengarah ke resources/views/customer/recipes/create-user
-        // .blade.php
         return view('customer.recipes.create-user');
     }
 
     /**
-     * FITUR 3: MENYIMPAN RESEP BARU DARI USER (POST)
+     * Menyimpan resep baru dari user.
      */
     public function store(Request $request)
     {
+        // Validasi input utama resep dan relasi
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'duration' => 'required|string|max:255',
@@ -101,15 +135,17 @@ class CustomerController extends Controller
             'nutritions.*.amount' => 'nullable|string',
         ]);
 
+        // Simpan foto jika ada
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('recipes', 'public');
         }
 
-        // Ini bagian pentingnya
-        $data['user_id'] = Auth::id(); // Set pemilik resep
-        $data['is_official'] = false;  // Set sebagai resep user biasa
+        // Set pemilik resep dan tandai sebagai resep user
+        $data['user_id'] = Auth::id();
+        $data['is_official'] = false;
 
-        $recipe = Recipe::create($data); // Simpan resep
+        // Simpan data resep utama
+        $recipe = Recipe::create($data);
 
         // Simpan ingredients
         if ($request->ingredients) {
@@ -148,37 +184,36 @@ class CustomerController extends Controller
                 }
             }
         }
-        
-        // Arahkan kembali ke dashboard user
+
         return redirect()->route('customer.dashboard')->with('success', 'Resep kamu berhasil diposting!');
     }
 
     /**
-     * FITUR 5: MENAMPILKAN FORM EDIT RESEP
+     * Menampilkan form edit resep milik user.
      */
     public function edit(Recipe $recipe)
     {
-        // OTORISASI: Cek apakah user ini pemilik resepnya
+        // Otorisasi: hanya pemilik resep yang boleh mengedit
         if ($recipe->user_id !== Auth::id()) {
             abort(403, 'ANDA TIDAK BERHAK MENGEDIT RESEP INI');
         }
 
         $recipe->load(['ingredients', 'steps', 'nutritions']);
-        // Ini akan mengarah ke resources/views/customer/recipes/edit.blade.php
+
         return view('customer.recipes.edit-user', compact('recipe'));
     }
 
     /**
-     * FITUR 6: MENYIMPAN UPDATE RESEP DARI USER (PUT/PATCH)
+     * Menyimpan perubahan (update) resep milik user.
      */
     public function update(Request $request, Recipe $recipe)
     {
-        // OTORISASI: Cek apakah user ini pemilik resepnya
+        // Otorisasi: hanya pemilik resep yang boleh mengupdate
         if ($recipe->user_id !== Auth::id()) {
             abort(403, 'ANDA TIDAK BERHAK MENGUPDATE RESEP INI');
         }
 
-        // Validasi data (sama seperti store)
+        // Validasi input utama resep dan relasi
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'duration' => 'required|string|max:255',
@@ -193,7 +228,7 @@ class CustomerController extends Controller
             'nutritions.*.amount' => 'nullable|string',
         ]);
 
-        // Logika update foto (sama seperti AdminController)
+        // Update foto jika diganti
         if ($request->hasFile('photo')) {
             if ($recipe->photo && Storage::disk('public')->exists($recipe->photo)) {
                 Storage::disk('public')->delete($recipe->photo);
@@ -201,28 +236,49 @@ class CustomerController extends Controller
             $data['photo'] = $request->file('photo')->store('recipes', 'public');
         }
 
-        // Update resep utama
+        // Update data resep utama
         $recipe->update($data);
 
-        // Hapus data relasi lama
+        // Hapus relasi lama sebelum menambahkan yang baru
         $recipe->ingredients()->delete();
         $recipe->steps()->delete();
         $recipe->nutritions()->delete();
 
-        // Buat ulang data relasi (sama seperti store)
+        // Simpan ulang ingredients
         if ($request->ingredients) {
             foreach ($request->ingredients as $ingredient) {
-                if (!empty($ingredient)) { Ingredient::create(['recipe_id' => $recipe->id, 'item' => $ingredient]); }
+                if (!empty($ingredient)) {
+                    Ingredient::create([
+                        'recipe_id' => $recipe->id,
+                        'item' => $ingredient
+                    ]);
+                }
             }
         }
+
+        // Simpan ulang steps
         if ($request->steps) {
             foreach ($request->steps as $index => $step) {
-                if (!empty($step)) { Step::create(['recipe_id' => $recipe->id, 'instruction' => $step, 'order' => $index + 1]); }
+                if (!empty($step)) {
+                    Step::create([
+                        'recipe_id' => $recipe->id,
+                        'instruction' => $step,
+                        'order' => $index + 1
+                    ]);
+                }
             }
         }
+
+        // Simpan ulang nutritions
         if ($request->nutritions) {
             foreach ($request->nutritions as $nutrition) {
-                if (!empty($nutrition['name']) && !empty($nutrition['amount'])) { Nutrition::create(['recipe_id' => $recipe->id, 'name' => $nutrition['name'], 'value' => $nutrition['amount']]); }
+                if (!empty($nutrition['name']) && !empty($nutrition['amount'])) {
+                    Nutrition::create([
+                        'recipe_id' => $recipe->id,
+                        'name' => $nutrition['name'],
+                        'value' => $nutrition['amount']
+                    ]);
+                }
             }
         }
 
@@ -230,23 +286,59 @@ class CustomerController extends Controller
     }
 
     /**
-     * FITUR 7: MENGHAPUS RESEP MILIK USER
+     * Menghapus resep milik user.
      */
     public function destroy(Recipe $recipe)
     {
-        // OTORISASI: Cek apakah user ini pemilik resepnya
+        // Otorisasi: hanya pemilik resep yang boleh menghapus
         if ($recipe->user_id !== Auth::id()) {
             abort(403, 'ANDA TIDAK BERHAK MENGHAPUS RESEP INI');
         }
 
-        // Logika hapus foto (sama seperti AdminController)
+        // Hapus foto jika masih ada di storage
         if ($recipe->photo && Storage::disk('public')->exists($recipe->photo)) {
             Storage::disk('public')->delete($recipe->photo);
         }
 
-        // Hapus resep
         $recipe->delete();
 
         return redirect()->route('customer.dashboard')->with('success', 'Resep berhasil dihapus!');
+    }
+
+    public function compare(Request $request)
+    {
+        $recipe1Id = $request->query('recipe1');
+
+        if (!$recipe1Id) {
+            abort(404, 'Resep pertama tidak ditemukan.');
+        }
+
+        // Resep pertama: lengkap dengan relasi & statistik
+        $recipe1 = Recipe::with(['user', 'ingredients', 'nutritions', 'steps'])
+            ->withAvg('ratings', 'rating')
+            ->withCount(['ratings', 'comments'])
+            ->findOrFail($recipe1Id);
+
+        // Resep kedua (jika sudah dipilih)
+        $recipe2Id = $request->query('recipe2');
+        $recipe2 = null;
+
+        if ($recipe2Id) {
+            $recipe2 = Recipe::with(['user', 'ingredients', 'nutritions', 'steps'])
+                ->withAvg('ratings', 'rating')
+                ->withCount(['ratings', 'comments'])
+                ->findOrFail($recipe2Id);
+        }
+
+        // Daftar resep lain untuk pilihan resep pembanding (kecuali resep pertama)
+        $otherRecipes = Recipe::where('id', '!=', $recipe1->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'is_official']);
+
+        return view('customer.recipes.compare-user', [
+            'recipe1'      => $recipe1,
+            'recipe2'      => $recipe2,
+            'otherRecipes' => $otherRecipes,
+        ]);
     }
 }

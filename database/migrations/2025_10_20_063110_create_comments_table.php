@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
+            $table->text('body');
             $table->timestamps();
         });
     }
+    
 
     /**
      * Reverse the migrations.

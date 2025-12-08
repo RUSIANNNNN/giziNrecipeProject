@@ -19,6 +19,11 @@ class RatingController extends Controller
         ]);
 
         $userId = Auth::id();
+        // Larang pemilik resep memberi rating untuk resepnya sendiri
+        if ($recipe->user_id === $userId) {
+            return redirect()->back()->with('error', 'Kamu tidak bisa memberi rating pada resep milikmu sendiri.');
+        }
+
 
         // Cek apakah user sudah memberi rating
         $existing = Rating::where('recipe_id', $recipe->id)
