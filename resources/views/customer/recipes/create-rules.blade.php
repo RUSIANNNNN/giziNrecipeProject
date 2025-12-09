@@ -6,15 +6,6 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-        {{-- Back link --}}
-        <div>
-            <a href="{{ route('customer.dashboard') }}"
-                class="inline-flex items-center text-sm font-medium text-neutral-400 hover:text-neutral-600 gap-2 transition-colors">
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                Kembali ke beranda
-            </a>
-        </div>
-
         {{-- Header --}}
         <section class="space-y-2">
             <h1 class="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900">

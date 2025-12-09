@@ -19,16 +19,74 @@ class CustomerController extends Controller
      */
     public function dashboard()
     {
-        $userId = Auth::id();
+        // Ringkasan global
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $recipeCount    = Recipe::count();                // total semua resep
+            $bookmarksCount = Bookmark::where('user_id', $userId)->count();
+            $userName       = Auth::user()->name;
+        } else {
+            $recipeCount    = Recipe::count();
+            $bookmarksCount = 0;
+            $userName       = null;
+        }
 
-        // Hitung resep yang dibuat oleh user
-        $recipeCount = Recipe::where('user_id', $userId)->count();
+        // 1) Hero recipe (paling baru)
+        $heroRecipe = Recipe::withAvg('ratings', 'rating')
+            ->withCount('comments')
+            ->latest()
+            ->first();
 
-        // Hitung resep yang dibookmark oleh user
-        $bookmarksCount = Bookmark::where('user_id', $userId)->count();
+        // 2) "Jangan Terlewat" – 3 resep terbaru
+        $dontMissRecipes = Recipe::withAvg('ratings', 'rating')
+            ->withCount('comments')
+            ->latest()
+            ->take(3)
+            ->get();
 
-        return view('customer.dashboard', compact('recipeCount', 'bookmarksCount'));
+        // 3) Resep official pakar gizi
+        $officialRecipes = Recipe::where('is_official', true)
+            ->withAvg('ratings', 'rating')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        // 4) Resep komunitas terbaru
+        $communityRecipes = Recipe::where('is_official', false)
+            ->withAvg('ratings', 'rating')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        // 5) Resep cepat & praktis (heuristik dari durasi)
+        $quickRecipes = Recipe::where('duration', 'like', '%menit%')
+            ->orWhere('duration', 'like', '%minute%')
+            ->orWhere('duration', 'like', '%quick%')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        // 6) Fan favorites – rating tertinggi
+        $fanFavorites = Recipe::withAvg('ratings', 'rating')
+            ->orderByDesc('ratings_avg_rating')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        return view('customer.dashboard', compact(
+            'recipeCount',
+            'bookmarksCount',
+            'userName',
+            'heroRecipe',
+            'dontMissRecipes',
+            'officialRecipes',
+            'communityRecipes',
+            'quickRecipes',
+            'fanFavorites'
+        ));
     }
+
+
 
     /**
      * Menampilkan daftar semua resep (list resep user & admin).
@@ -46,11 +104,11 @@ class CustomerController extends Controller
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('duration', 'like', '%'.$search.'%')
-                    ->orWhere('description', 'like', '%'.$search.'%')
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('duration', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
                     ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('name', 'like', '%'.$search.'%');
+                        $userQuery->where('name', 'like', '%' . $search . '%');
                     });
             });
         }

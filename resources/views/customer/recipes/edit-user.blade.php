@@ -17,7 +17,7 @@
 
         {{-- Title + Intro --}}
         <div>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-widest uppercase text-neutral-900">
+            <h1 class="text-2xl sm:text-4xl font-black tracking-widest uppercase text-neutral-900">
                 Edit Resep Kamu
             </h1>
             <p class="mt-1 text-sm text-neutral-400">

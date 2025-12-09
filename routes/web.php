@@ -9,21 +9,12 @@ use App\Http\Controllers\RatingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Homepage
-|--------------------------------------------------------------------------
-*/
+/* Homepage */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [CustomerController::class, 'dashboard'])
+    ->name('customer.dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| Redirect setelah login (based on role)
-|--------------------------------------------------------------------------
-*/
+/* Redirect setelah login (based on role) */
 Route::get('/redirect', function () {
     if (! Auth::check()) {
         return redirect('/login');
@@ -42,11 +33,7 @@ Route::get('/redirect', function () {
     return redirect('/login');
 })->name('redirect');
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes
-|--------------------------------------------------------------------------
-*/
+/* Admin Routes */
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -59,16 +46,12 @@ Route::middleware(['auth', 'role:admin'])
             ->name('recipes.comments.destroy');
     });
 
-/*
-|--------------------------------------------------------------------------
-| Customer Routes
-|--------------------------------------------------------------------------
-*/
+/* Customer Routes */
 Route::middleware(['auth', 'role:customer'])
     ->prefix('customer')
     ->name('customer.')
     ->group(function () {
-        Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+        // HAPUS: Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
 
         Route::get('/recipes/compare', [CustomerController::class, 'compare'])
             ->name('recipes.compare');
@@ -79,11 +62,7 @@ Route::middleware(['auth', 'role:customer'])
         Route::resource('recipes', CustomerController::class);
     });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated User Routes (Profile, Rating, Bookmark)
-|--------------------------------------------------------------------------
-*/
+/* Authenticated User Routes (Profile, Rating, Bookmark) */
 Route::middleware('auth')->group(function () {
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -107,4 +86,4 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

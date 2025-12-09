@@ -4,14 +4,11 @@
 @section('title', 'Tentang NutriRecipe | NutriRecipe')
 
 @section('content')
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {{-- Hero --}}
         <section class="space-y-3 mb-12">
-            <p class="text-xs font-semibold tracking-[0.25em] text-neutral-400 uppercase">
-                Tentang Kami
-            </p>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-widest uppercase text-neutral-900">
+            <h1 class="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900">
                 NutriRecipe
             </h1>
             <p class="max-w-2xl text-sm sm:text-base text-neutral-500">

@@ -32,7 +32,7 @@
         {{-- Header + actions --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="space-y-2">
-                <h1 class="text-3xl sm:text-4xl font-black tracking-widest uppercase text-neutral-900">
+                <h1 class="text-4xl sm:text-4xl font-black tracking-widest uppercase text-neutral-900">
                     {{ $recipe->name }}
                 </h1>
 

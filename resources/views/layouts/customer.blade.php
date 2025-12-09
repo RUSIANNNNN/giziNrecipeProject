@@ -30,13 +30,13 @@
                 <!-- Brand -->
                 <div class="flex items-center">
                     <div>
-                        <p class="text-3xl font-black">NutriRecipe</p>
+                        <p class="text-3xl font-black text-emerald-400">NutriRecipe</p>
                         <p class="text-xs text-neutral-300">Makan sehat, hidup lebih baik</p>
                     </div>
                 </div>
 
                 <!-- Nav links (desktop) -->
-                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <nav class="hidden md:flex items-center gap-6 text-sm">
                     <a href="{{ route('customer.dashboard') }}"
                         class="{{ request()->routeIs('customer.dashboard') ? 'text-emerald-400' : 'text-white hover:text-neutral-200' }}">
                         Beranda
@@ -74,8 +74,9 @@
                 <!-- Right side -->
                 <div class="flex items-center gap-4">
                     @auth
+                        {{-- Jika sudah login: tampil nama + tombol keluar --}}
                         <div class="hidden sm:flex flex-col items-end leading-tight">
-                            <span class="text-sm font-medium text-white">{{ auth()->user()->name }}</span>
+                            <span class="text-sm text-white">{{ auth()->user()->name }}</span>
                             <span class="text-xs text-neutral-400">Pengguna NutriRecipe</span>
                         </div>
 
@@ -86,8 +87,23 @@
                                 Keluar
                             </button>
                         </form>
+                    @else
+                        <div class="flex items-center gap-4">
+                            <a href="{{ route('login') }}"
+                                class="text-xs sm:text-sm text-white hover:text-neutral-200">
+                                Login
+                            </a>
+
+                            @if (Route::has('register'))
+                                <a href="{{ route('register') }}"
+                                    class="inline-flex items-center rounded-full border border-emerald-600 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-600/20 hover:text-emerald-400 transition">
+                                    Daftar
+                                </a>
+                            @endif
+                        </div>
                     @endauth
                 </div>
+
             </div>
         </header>
 

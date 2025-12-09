@@ -42,6 +42,8 @@ class RecipeSeeder extends Seeder
             ['name' => 'Rendang',                'photo' => 'img/recipe images/rendang.png'],
             ['name' => 'Sate',                   'photo' => 'img/recipe images/sate.jpg'],
             ['name' => 'Zucchini Slice',         'photo' => 'img/recipe images/zucchini slice.jpg'],
+            ['name' => 'Fruit & Nuts Oatmeal',   'photo' => 'img/recipe images/oatmeal buah kacang.jpg'],
+            ['name' => 'Roasted Lemon Chicken',  'photo' => 'img/recipe images/ayam panggan lemon brokoli.jpg'],
         ];
 
         $totalRecipes = 12;
@@ -95,7 +97,7 @@ class RecipeSeeder extends Seeder
                 ]);
             }
 
-            $maxRatings = min(count($userIds), 5); 
+            $maxRatings = min(count($userIds), 5);
             $selectedUserIds = $faker->randomElements(
                 $userIds,
                 $faker->numberBetween(1, $maxRatings)
