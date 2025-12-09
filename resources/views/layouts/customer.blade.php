@@ -30,7 +30,7 @@
                 <!-- Brand -->
                 <div class="flex items-center">
                     <div>
-                        <p class="text-3xl font-black text-emerald-400">NutriRecipe</p>
+                        <p class="text-3xl font-black text-emerald-500">NutriRecipe</p>
                         <p class="text-xs text-neutral-300">Makan sehat, hidup lebih baik</p>
                     </div>
                 </div>

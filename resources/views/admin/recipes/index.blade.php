@@ -8,25 +8,25 @@
 
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-                <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+                <h1 class="text-2xl font-semibold tracking-tight text-neutral-900">
                     Daftar Resep
                 </h1>
-                <p class="mt-1 text-sm text-slate-500">
+                <p class="mt-1 text-sm text-neutral-500">
                     Lihat, edit, dan kelola semua resep yang tersimpan di sistem.
                 </p>
             </div>
 
             <a href="{{ route('admin.recipes.create') }}"
-                class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">
+                class="inline-flex items-center gap-2 rounded-sm bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
                 <span class="material-symbols-outlined text-base">Tambah Resep Official</span>
 
             </a>
         </div>
 
         @if ($recipes->isEmpty())
-            <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 text-sm text-slate-600">
+            <div class="bg-white border border-neutral-100 rounded-sm p-6 text-sm text-neutral-600">
                 <p class="font-medium">Belum ada resep.</p>
-                <p class="mt-1 text-slate-500">
+                <p class="mt-1 text-neutral-500">
                     Mulai tambahkan resep official pertama Anda dengan menekan tombol
                     <span class="font-semibold">"Tambah Resep Official"</span>.
                 </p>
@@ -34,13 +34,19 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 @foreach ($recipes as $recipe)
-                    <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="bg-white border border-neutral-100 rounded-sm overflow-hidden flex flex-col">
                         {{-- Foto --}}
                         @if ($recipe->photo)
-                            <img src="{{ asset('storage/' . $recipe->photo) }}" alt="{{ $recipe->name }}"
-                                class="h-40 w-full object-cover">
+                            @php
+                                $img = $recipe->photo
+                                    ? $recipe->photo_url ?? asset('storage/' . $recipe->photo)
+                                    : 'https://placehold.co/800x600/e2e8f0/e2e8f0?text=NutriRecipe';
+                            @endphp
+                            <img src="{{ $img }}" alt="{{ $recipe->name }}"
+                                class="h-full w-full object-cover group-hover:brightness-95 transition">
                         @else
-                            <div class="h-40 w-full flex items-center justify-center bg-slate-100 text-xs text-slate-500">
+                            <div
+                                class="h-40 w-full flex items-center justify-center bg-neutral-100 text-xs text-neutral-500">
                                 Tidak ada foto
                             </div>
                         @endif
@@ -49,10 +55,10 @@
                             {{-- Judul + badge --}}
                             <div class="flex items-start justify-between gap-2">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-slate-900 line-clamp-2">
+                                    <h3 class="text-sm font-semibold text-neutral-900 line-clamp-2">
                                         {{ $recipe->name }}
                                     </h3>
-                                    <p class="mt-0.5 text-xs text-slate-500">
+                                    <p class="mt-0.5 text-xs text-neutral-500">
                                         Pakar gizi: {{ $recipe->nutritionist ?? '-' }}
                                     </p>
                                 </div>
@@ -65,14 +71,14 @@
                             </div>
 
                             {{-- Deskripsi singkat --}}
-                            <p class="text-xs text-slate-500 line-clamp-3">
+                            <p class="text-xs text-neutral-500 line-clamp-3">
                                 {{ \Illuminate\Support\Str::limit($recipe->description, 120) }}
                             </p>
 
                             {{-- Meta --}}
-                            <div class="mt-1 text-xs text-slate-500 flex items-center justify-between">
+                            <div class="mt-1 text-xs text-neutral-500 flex items-center justify-between">
                                 <span class="inline-flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px] text-slate-400">schedule</span>
+                                    <span class="material-symbols-outlined text-[14px] text-neutral-400">schedule</span>
                                     <span>{{ $recipe->duration ?? '-' }}</span>
                                 </span>
                                 <span class="text-[11px]">
@@ -82,7 +88,7 @@
                         </div>
 
                         {{-- Rating & Komentar --}}
-                        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                        <div class="mt-2 flex items-center justify-between text-[11px] text-neutral-500">
                             <div class="flex items-center gap-1">
                                 {{-- ikon bintang --}}
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -102,21 +108,21 @@
                             </div>
 
                             <div class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-xs text-slate-400">chat_bubble</span>
+                                <span class="material-symbols-outlined text-xs text-neutral-400">chat_bubble</span>
                                 <span>{{ $recipe->comments_count ?? 0 }} komentar</span>
                             </div>
                         </div>
 
 
                         {{-- Actions --}}
-                        <div class="border-t border-slate-100 px-4 py-3 flex items-center justify-between gap-2">
+                        <div class="border-t border-neutral-100 px-4 py-3 flex items-center justify-between gap-2">
                             <div class="flex gap-2">
                                 <a href="{{ route('admin.recipes.show', $recipe->id) }}"
-                                    class="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                                    class="inline-flex items-center rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50">
                                     Detail
                                 </a>
                                 <a href="{{ route('admin.recipes.edit', $recipe->id) }}"
-                                    class="inline-flex items-center rounded-lg border border-emerald-500 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50">
+                                    class="inline-flex items-center rounded-sm border border-emerald-500 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50">
                                     Edit
                                 </a>
                             </div>
@@ -125,7 +131,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                    class="inline-flex items-center rounded-lg border border-rose-500 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50">
+                                    class="inline-flex items-center rounded-sm border border-rose-500 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50">
                                     Hapus
                                 </button>
                             </form>
