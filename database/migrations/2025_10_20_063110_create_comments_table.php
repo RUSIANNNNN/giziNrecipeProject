@@ -9,19 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            // Siapa yang komentar?
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            // Di resep mana?
-            $table->foreignId('recipe_id')->constrained()->onDelete('cascade');
-            // Isi komentarnya
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
             $table->text('body');
             $table->timestamps();
         });
     }
+    
 
     /**
      * Reverse the migrations.

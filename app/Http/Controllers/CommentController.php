@@ -23,4 +23,11 @@ class CommentController extends Controller
 
         return back()->with('success', 'Komentar berhasil dikirim!');
     }
+
+    public function destroy(Recipe $recipe, Comment $comment)
+    {
+        $comment->delete();
+
+        return back()->with('success', 'Komentar berhasil dihapus.');
+    }
 }

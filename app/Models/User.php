@@ -52,5 +52,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Recipe::class);
     }
+    
+    // Relasi: User punya banyak Bookmark
+    public function bookmarks(){
+        return $this->hasMany(Bookmark::class);
+    }
 
 }
